@@ -24,8 +24,12 @@ public class MemberDAO {
 
 
     // 아래 List에서 쿼리문 밖으로 빼기 (찾기 쉽게, 오류 검증 등의 용도)
-    // 회원 조회 쿼리
+
+    // 전체 회원 조회 쿼리
     private static final String SELECT_ALL_MEMBERS = "SELECT EMAIL, NAME, REG_DATE FROM MINI_MEMBER";
+
+    // 개별 회원 조회 쿼리
+    private static final String SELECT_EMAIL = "SELECT EMAIL, NAME, REG_DATE, PASSWORD FROM MINI_MEMBER WHERE EMAIL = ?";
 
     // 로그인 쿼리
     // 조건에 해당하는 행의 숫자 (count)
@@ -37,8 +41,11 @@ public class MemberDAO {
     // 회원가입 여부 확인 쿼리
     private static final String CHECK_EMAIL = "SELECT COUNT(*) FROM MINI_MEMBER WHERE EMAIL = ?";
 
-    private static final String DELETE_MEMBER = "DELETE FROM mini_member WHERE email = ?";
+    // 회원 정보 수정 쿼리
     private static final String UPDATE_MEMBER = "UPDATE mini_member SET email = ?, password = ?, name = ? WHERE email = ?";
+
+    // 회원 삭제 쿼리
+    private static final String DELETE_MEMBER = "DELETE FROM mini_member WHERE email = ?";
 
 
     // 전체 회원 조회
@@ -50,6 +57,17 @@ public class MemberDAO {
             throw e; // 예외처리를 안하겠다 (밖으로 던지겠다)
         }
     }
+
+    // 개별 회원 조회
+    public List<MemberVO> findMemberByEmail(String email) {
+        try {
+            return jdbcTemplate.query((SELECT_EMAIL), new Object[]{email}, new MemberRowMapper());
+        } catch (DataAccessException e) {
+            log.error("회원 목록 조회 중 예외 발생", e);
+            throw e;
+        }
+    }
+
 
     // 이에밀 및 이름으로 회원 검색 하기
     public List<MemberVO> findMemberByEmailOrName(String email, String name) {

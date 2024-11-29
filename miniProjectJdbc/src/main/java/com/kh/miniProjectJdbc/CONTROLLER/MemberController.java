@@ -23,6 +23,17 @@ public class MemberController {
         List<MemberVO> list = memberDAO.memberList();
         return ResponseEntity.ok(list);
     }
+
+    // 개별 회원 조회
+    @GetMapping("/{email}")
+    // 리스트가 아니고 하나니까 MemberVO 그대로 넣어줌
+    // 프론트엔드가 넣어준걸 받아옴
+    public ResponseEntity<MemberVO> getMemberInfo(@PathVariable String email) {
+        List<MemberVO> list = memberDAO.findMemberByEmail(email);
+        // 유일한 식별자, 1명이니까 0으로 넣어줌
+        return ResponseEntity.ok(list.get(0));
+    }
+
     // 이메일 또는 이름으로 멤버 조회
     @GetMapping("/search")
     public ResponseEntity<List<MemberVO>> getMemberByEmailOrName(@RequestParam(required = false) String email,
