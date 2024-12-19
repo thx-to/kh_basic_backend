@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Optional;
 
 
@@ -29,11 +28,15 @@ import java.util.Optional;
 // 특히 동시에 여러가지 일들이 일어나고 모든게 성공했을때 응답을 줘야 하는 경우에 사용
 @Transactional
 
+
+// 인증과 인가 때문에 로그인/회원가입만을 위한 서비스 메소드를 따로 구성
 public class AuthService {
+
 
     // 생성자를 통한 의존성 주입
     // 생성자를 통해 의존성 주입을 받는 경우에는 @Autowired 생략
     private final MemberRepository memberRepository;
+
 
     // 회원가입 여부 확인
     // isMember를 컨트롤러가 불러주면 됨
@@ -41,6 +44,7 @@ public class AuthService {
         // 해당 이메일이 존재하면 true, 없으면 false 반환
         return memberRepository.existsByEmail(email);
     }
+
 
     // 회원가입
     public boolean signUp(MemberReqDto memberReqDto) {
@@ -58,6 +62,7 @@ public class AuthService {
         }
     }
 
+
     // 로그인
     public boolean login(LoginReqDto loginReqDto) {
         try {
@@ -69,8 +74,8 @@ public class AuthService {
             log.error("로그인 실패 : {}", e.getMessage());
             return false;
         }
-
     }
+
 
     // 회원가입 DTO를 ENTITY(VO 역할)로 변환
     private Member convertDtoToEntity(MemberReqDto memberReqDto) {
@@ -80,5 +85,6 @@ public class AuthService {
         member.setPwd(memberReqDto.getPwd());
         return member;
     }
+
 
 }
