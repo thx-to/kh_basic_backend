@@ -2,6 +2,8 @@ package com.kh.spring_jpa.controller;
 
 import com.kh.spring_jpa.dto.BoardReqDto;
 import com.kh.spring_jpa.dto.BoardResDto;
+import com.kh.spring_jpa.dto.CommentResDto;
+import com.kh.spring_jpa.entity.Comment;
 import com.kh.spring_jpa.repository.BoardRepository;
 import com.kh.spring_jpa.service.BoardService;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +51,7 @@ public class BoardController {
 
     // 게시글 검색
     @GetMapping("/search-title")
-    public ResponseEntity<List<BoardResDto>> searchBoardTitle(@RequestBody String keyword) {
+    public ResponseEntity<List<BoardResDto>> searchBoardTitle(@RequestParam String keyword) {
         List<BoardResDto> boardResDtoList = boardService.searchBoard(keyword);
         return ResponseEntity.ok(boardResDtoList);
     }
@@ -96,5 +98,6 @@ public class BoardController {
         List<BoardResDto> boardResDtoList = boardService.searchSpecificBoard(title, content);
         return ResponseEntity.ok(boardResDtoList);
     }
+
 
 }

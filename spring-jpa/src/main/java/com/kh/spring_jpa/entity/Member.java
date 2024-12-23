@@ -51,4 +51,5 @@ public class Member {
     private void onCreate() {
         this.regDate = LocalDateTime.now();
     }
+
 }

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter @Setter @NoArgsConstructor
 public class BoardResDto {
@@ -17,5 +18,8 @@ public class BoardResDto {
     private String imgPath;
     private LocalDateTime regDate;
     private String email;
+
+    // 댓글 목록 출력
+    private List<CommentResDto> comments;
 
 }

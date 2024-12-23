@@ -7,6 +7,8 @@ import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 // 게시글에 관한 엔티티
 
@@ -46,5 +48,10 @@ public class Board {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    // OneToMany로 걸어주기 TEST
+    // mappedBy를 쓰면 실제 DB에는 만들어지지 않음, 주인이 아님을 의미함
+    // 실제로 만들어지는건 ManyToOne, 한쪽에서만 만들면 되고 만들어진걸 참조(객체를 참조만 함)
+    @OneToMany(mappedBy = "board")
+    private List<Comment> comments = new ArrayList<>();
 
 }
