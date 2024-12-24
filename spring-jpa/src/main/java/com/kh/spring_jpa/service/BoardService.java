@@ -2,6 +2,7 @@ package com.kh.spring_jpa.service;
 
 import com.kh.spring_jpa.dto.BoardReqDto;
 import com.kh.spring_jpa.dto.BoardResDto;
+import com.kh.spring_jpa.dto.CommentReqDto;
 import com.kh.spring_jpa.dto.CommentResDto;
 import com.kh.spring_jpa.entity.Board;
 import com.kh.spring_jpa.entity.Comment;
@@ -263,6 +264,72 @@ public class BoardService {
         }
     }
 
+
+    // 보드 쪽에서 접근해서 Comment 추가하기
+    @Transactional
+    public boolean addComment(Long boardId, CommentReqDto commentReqDto) {
+
+        try {
+
+            // id로 board 객체 가져오기
+            Board board = boardRepository.findById(boardId)
+                    .orElseThrow(()-> new RuntimeException("게시글이 존재하지 않습니다."));
+
+            // email로 member 객체 가져오기
+            Member member = memberRepository.findByEmail(commentReqDto.getEmail())
+                    .orElseThrow(()-> new RuntimeException("회원 정보가 존재하지 않습니다."));
+
+            // DTO > ENTITY 변환
+            Comment comment = new Comment();
+            comment.setContent(commentReqDto.getContent());
+            comment.setMember(member);
+            comment.setBoard(board);
+            board.addComment(comment);
+            boardRepository.save(board);
+
+            return true;
+
+        } catch (Exception e) {
+            log.error("댓글 추가 실패 : {}", e.getMessage());
+
+            return false;
+        }
+    }
+
+
+    // 보드 쪽에서 접근해서 Comment 삭제하기
+    @Transactional
+    public boolean removeComment(Long boardId, Long commentId) {
+
+        try {
+
+            // id로 보드 객체 가져오기
+            Board board = boardRepository.findById(boardId)
+                    .orElseThrow(()-> new RuntimeException("게시글이 존재하지 않습니다."));
+            Comment targetComment = null; // 삭제할 댓글에 대한 변수 생성
+            for (Comment comment : board.getComments()) {
+                if(comment.getCommentId().equals(commentId)) {
+                    targetComment = comment;
+                    break;
+                }
+            }
+            if (targetComment == null) {
+                log.error("해당 댓글이 존재하지 않습니다.");
+            }
+            board.removeComment(targetComment);
+            boardRepository.save(board);
+
+            return true;
+
+        } catch (Exception e) {
+            log.error("댓글 삭제 실패 : {}", e.getMessage());
+
+            return false;
+        }
+
+    }
+
+
     // 엔티티를 Dto로 변환하는 과정에서 댓글을 추가함
     private BoardResDto convertEntityToDto(Board board) {
 
@@ -307,5 +374,7 @@ public class BoardService {
 
         return boardResDto;
     }
+
+
 
 }

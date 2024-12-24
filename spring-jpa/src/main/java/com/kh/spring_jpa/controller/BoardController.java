@@ -2,6 +2,7 @@ package com.kh.spring_jpa.controller;
 
 import com.kh.spring_jpa.dto.BoardReqDto;
 import com.kh.spring_jpa.dto.BoardResDto;
+import com.kh.spring_jpa.dto.CommentReqDto;
 import com.kh.spring_jpa.dto.CommentResDto;
 import com.kh.spring_jpa.entity.Comment;
 import com.kh.spring_jpa.repository.BoardRepository;
@@ -97,6 +98,22 @@ public class BoardController {
     public ResponseEntity<List<BoardResDto>> boardSearchTitleOrContent(@RequestParam String title, @RequestParam String content) {
         List<BoardResDto> boardResDtoList = boardService.searchSpecificBoard(title, content);
         return ResponseEntity.ok(boardResDtoList);
+    }
+
+
+    // 댓글 추가
+    @PostMapping("/{boardId}/comments")
+    public ResponseEntity<Boolean> addComment(@PathVariable Long boardId, @RequestBody CommentReqDto commentReqDto) {
+        boolean isSuccess = boardService.addComment(boardId, commentReqDto);
+        return ResponseEntity.ok(isSuccess);
+    }
+
+
+    // 댓글 삭제
+    @DeleteMapping("/{boardId}/comments/{commentId}")
+    public ResponseEntity<Boolean> removeComment(@PathVariable Long boardId, @PathVariable Long commentId) {
+        boolean isSuccess = boardService.removeComment(boardId, commentId);
+        return ResponseEntity.ok(isSuccess);
     }
 
 

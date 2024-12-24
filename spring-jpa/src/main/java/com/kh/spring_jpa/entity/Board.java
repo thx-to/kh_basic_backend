@@ -51,7 +51,22 @@ public class Board {
     // OneToMany로 걸어주기 TEST
     // mappedBy를 쓰면 실제 DB에는 만들어지지 않음, 주인이 아님을 의미함
     // 실제로 만들어지는건 ManyToOne, 한쪽에서만 만들면 되고 만들어진걸 참조(객체를 참조만 함)
-    @OneToMany(mappedBy = "board")
+    // 영속성 전이 : 부모 엔티티의 상태 변화가 자식 엔티티에도 전이되는 것
+    // 고아 객체 제거 : 부모와의 연관 관계가 끊어진 자식 엔티티를 자동으로 데이터베이스에서 제거하는 것
+    // 부모가 관리하는 List에서 해당 객체를 삭제하는 경우 실제 DB에서 삭제됨
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
+
+    public void addComment(Comment comment) {
+        comments.add(comment);
+        comment.setBoard(this);
+    }
+
+    public void removeComment(Comment comment) {
+        comments.remove(comment);
+        comment.setBoard(null);
+    }
+
+
 
 }
