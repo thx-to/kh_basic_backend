@@ -25,7 +25,7 @@ public class AuthController {
     @GetMapping("/exists/{email}")
     public ResponseEntity<Boolean> isMember(@PathVariable String email) {
         boolean isTrue = authService.isMember(email);
-        return ResponseEntity.ok(isTrue); // 존재하면 가입하면 안되니까 not(!)을 붙여줌
+        return ResponseEntity.ok(!isTrue); // 존재하면 가입하면 안되니까 not(!)을 붙여줌
     }
 
 
