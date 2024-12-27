@@ -4,10 +4,17 @@ package com.kh.spring_jpa.service;
 
 import com.kh.spring_jpa.dto.LoginReqDto;
 import com.kh.spring_jpa.dto.MemberReqDto;
+import com.kh.spring_jpa.dto.MemberResDto;
+import com.kh.spring_jpa.dto.TokenDto;
 import com.kh.spring_jpa.entity.Member;
+import com.kh.spring_jpa.jwt.TokenProvider;
 import com.kh.spring_jpa.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
@@ -33,58 +40,82 @@ import java.util.Optional;
 public class AuthService {
 
 
-    // 생성자를 통한 의존성 주입
-    // 생성자를 통해 의존성 주입을 받는 경우에는 @Autowired 생략
+//    // 생성자를 통한 의존성 주입
+//    // 생성자를 통해 의존성 주입을 받는 경우에는 @Autowired 생략
+//    private final MemberRepository memberRepository;
+//
+//
+//    // 회원가입 여부 확인
+//    // isMember를 컨트롤러가 불러주면 됨
+//    public boolean isMember(String email) {
+//        // 해당 이메일이 존재하면 true, 없으면 false 반환
+//        return memberRepository.existsByEmail(email);
+//    }
+//
+//
+//    // 회원가입
+//    public boolean signUp(MemberReqDto memberReqDto) {
+//        // 서버에 다녀 와야 하니까 오류 발생 가능성이 있어 try ~ catch구문으로 넣어줌
+//        try {
+//            // member 엔티티(DB 테이블과 같음) 만들기
+//            Member member = convertDtoToEntity(memberReqDto);
+//            // save()는 insert와 update 역할을 하는 메소드로 JpaRepository 안에 있음
+//            // 기본적인 CRUD는 상속 관계를 통해 이미 다 만들어져 있음
+//            memberRepository.save(member);
+//            return true;
+//        } catch (Exception e) {
+//            log.error("회원 가입 실패 : {}", e.getMessage());
+//            return false;
+//        }
+//    }
+//
+//
+//    // 로그인
+//    public boolean login(LoginReqDto loginReqDto) {
+//        try {
+//            // null을 방지하기 위해 Member 객체에 껍데기(?)를 하나 매핑함
+//            Optional<Member> member = memberRepository
+//                    .findByEmailAndPwd(loginReqDto.getEmail(), loginReqDto.getPwd());
+//            return member.isPresent(); // 해당 객체가 존재함을 의미, 있으면 true 없으면 false
+//        } catch (Exception e) {
+//            log.error("로그인 실패 : {}", e.getMessage());
+//            return false;
+//        }
+//    }
+//
+//
+//    // 회원가입 DTO를 ENTITY(VO 역할)로 변환
+//    private Member convertDtoToEntity(MemberReqDto memberReqDto) {
+//        Member member = new Member();
+//        member.setEmail(memberReqDto.getEmail());
+//        member.setName(memberReqDto.getName());
+//        member.setPwd(memberReqDto.getPwd());
+//        return member;
+//    }
+
+
+    // JWT, 빌더 사용으로 새로 만든 AuthService
+
+    private final AuthenticationManagerBuilder managerBuilder; // 인증을 담당하는 클래스
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final TokenProvider tokenProvider;
 
-
-    // 회원가입 여부 확인
-    // isMember를 컨트롤러가 불러주면 됨
-    public boolean isMember(String email) {
-        // 해당 이메일이 존재하면 true, 없으면 false 반환
-        return memberRepository.existsByEmail(email);
-    }
-
-
-    // 회원가입
-    public boolean signUp(MemberReqDto memberReqDto) {
-        // 서버에 다녀 와야 하니까 오류 발생 가능성이 있어 try ~ catch구문으로 넣어줌
-        try {
-            // member 엔티티(DB 테이블과 같음) 만들기
-            Member member = convertDtoToEntity(memberReqDto);
-            // save()는 insert와 update 역할을 하는 메소드로 JpaRepository 안에 있음
-            // 기본적인 CRUD는 상속 관계를 통해 이미 다 만들어져 있음
-            memberRepository.save(member);
-            return true;
-        } catch (Exception e) {
-            log.error("회원 가입 실패 : {}", e.getMessage());
-            return false;
+    // 회원 가입
+    public MemberResDto signup(MemberReqDto requestDto) {
+        if (memberRepository.existsByEmail(requestDto.getEmail())) {
+            throw new RuntimeException("이미 가입되어 있는 유저입니다");
         }
+        Member member = requestDto.toEntity(passwordEncoder);
+        return MemberResDto.of(memberRepository.save(member));
     }
-
 
     // 로그인
-    public boolean login(LoginReqDto loginReqDto) {
-        try {
-            // null을 방지하기 위해 Member 객체에 껍데기(?)를 하나 매핑함
-            Optional<Member> member = memberRepository
-                    .findByEmailAndPwd(loginReqDto.getEmail(), loginReqDto.getPwd());
-            return member.isPresent(); // 해당 객체가 존재함을 의미, 있으면 true 없으면 false
-        } catch (Exception e) {
-            log.error("로그인 실패 : {}", e.getMessage());
-            return false;
-        }
+    public TokenDto login(MemberReqDto requestDto) {
+        UsernamePasswordAuthenticationToken authenticationToken = requestDto.toAuthentication();
+        Authentication authentication = managerBuilder.getObject().authenticate(authenticationToken);
+        return tokenProvider.generateTokenDto(authentication);
     }
 
-
-    // 회원가입 DTO를 ENTITY(VO 역할)로 변환
-    private Member convertDtoToEntity(MemberReqDto memberReqDto) {
-        Member member = new Member();
-        member.setEmail(memberReqDto.getEmail());
-        member.setName(memberReqDto.getName());
-        member.setPwd(memberReqDto.getPwd());
-        return member;
-    }
-
-
+    // accessToken 재발급
 }

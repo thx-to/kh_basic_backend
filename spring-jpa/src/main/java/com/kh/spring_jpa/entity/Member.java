@@ -1,5 +1,6 @@
 package com.kh.spring_jpa.entity;
 
+import com.kh.spring_jpa.config.Authority;
 import lombok.*;
 
 import javax.persistence.*;
@@ -32,7 +33,7 @@ public class Member {
     @Column(nullable = false, length = 50)
     private String email;
 
-    @Column(nullable = false, length = 15)
+    @Column(nullable = false)
     private String pwd;
 
     @Column(length = 50)
@@ -47,9 +48,24 @@ public class Member {
     // JPA의 콜백(등록해두면 자동으로 호출) 메소드, 엔티티가 저장되기 전에 실행
     // DB에 삽입되기 전에 자동 설정
     // 데이터 삽입시 onCreate가 자동으로 불려짐 (현재 시간을 regDate에 자동으로 넣어줌)
-    @PrePersist
-    private void onCreate() {
+
+    // 아래 빌더 패턴과 겹칠까봐 잠깐 주석처리
+//    @PrePersist
+//    private void onCreate() {
+//        this.regDate = LocalDateTime.now();
+//    }
+
+    @Enumerated(EnumType.STRING)
+    private Authority authority;
+
+    // Builder 패턴을 사용할 때는 기본 생성자를 반드시 추가해줘야 함(NoArgsConstructor)
+    @Builder
+    public Member(String email, String name, String pwd, String img, Authority authority) {
+        this.email = email;
+        this.name = name;
+        this.pwd = pwd;
+        this.imgPath = img;
+        this.authority = authority;
         this.regDate = LocalDateTime.now();
     }
-
 }

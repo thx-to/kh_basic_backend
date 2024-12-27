@@ -8,17 +8,33 @@ package com.kh.spring_jpa.dto;
 // MemberReqDto는 회원가입용
 // entity/Member.java에서 회원가입에 필요한 필드는 이메일, 패스워드, 네임
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.kh.spring_jpa.config.Authority;
+import com.kh.spring_jpa.entity.Member;
+import lombok.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
+@Builder
+
 public class MemberReqDto {
 
     private String email;
     private String pwd;
     private String name;
     private String imgPath;
+
+    public Member toEntity(PasswordEncoder passwordEncoder) {
+        return Member.builder()
+                .email(email)
+                .pwd(passwordEncoder.encode(pwd))
+                .name(name)
+                .img(imgPath)
+                .authority(Authority.ROLE_USER)
+                .build();
+    }
+    public UsernamePasswordAuthenticationToken toAuthentication() {
+        return new UsernamePasswordAuthenticationToken(email, pwd);
+    }
 
 }
